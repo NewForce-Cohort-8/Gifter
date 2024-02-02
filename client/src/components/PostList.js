@@ -1,14 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { getAllPosts } from "../APIManagers/PostManager";
+import { getAllPosts, getAllPostsWithComments } from "../APIManagers/PostManager";
 import { Post } from "./Post";
+import { PostForm } from "./PostForm";
+import { PostSearch } from "./PostSearch";
 
 const PostList = () => {
   const [posts, setPosts] = useState([]);
 
-  const getPosts = () => {
-    getAllPosts().then(allPosts => setPosts(allPosts)); 
-  };
+  const getPosts = () => getAllPostsWithComments().then(allPosts => setPosts(allPosts)); 
+  ;
 
+  const updatePostsState = () => {
+    return getAllPosts()
+    .then((postArray) => {
+        setPosts(postArray)
+    })
+  }
   useEffect(() => {
     getPosts();
   }, []); 
@@ -16,8 +23,10 @@ const PostList = () => {
     <div className="container">
       <div className="row justify-content-center">
         <div className="cards-column">
+        <PostForm updatePostsState = {getPosts}/>
+        <PostSearch />
           {posts.map((post) => (
-            <Post key={post.id} post={post} />
+            <Post key={post.id} post={post}/>
           ))}
         </div>
       </div>

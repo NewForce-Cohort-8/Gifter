@@ -1,8 +1,7 @@
 import { useState } from "react";
 import {addPost} from "../APIManagers/PostManager"
-import { useNavigate } from "react-router-dom";
 
-export const PostForm = () => {
+export const PostForm = ({updatePostsState}) => {
     const [newPost, setNewPost] = useState(
         {
             title: "",
@@ -12,8 +11,6 @@ export const PostForm = () => {
             UserProfileId: 1
         }
     )
-
-    const navigate = useNavigate()
 
     const clickTheSaveButton = (e) => {
         e.preventDefault()
@@ -27,7 +24,13 @@ export const PostForm = () => {
         }
 
         addPost(newPostToSendToAPI)
-        .then(navigate("/"))
+        .then(setNewPost({
+            title: "",
+            imageUrl: "",
+            caption: "",
+            dateCreated: new Date(),
+            UserProfileId: 1
+        })).then(() => updatePostsState())
     }
 
     return (

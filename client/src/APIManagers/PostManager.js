@@ -16,3 +16,14 @@ export const addPost = (singlePost) => {
     body: JSON.stringify(singlePost),
   });
 };
+//https://localhost:5001/api/Post/search?q=stop&sortDesc=true
+export const SearchPosts = (searchTerm) => {
+    return fetch(`${baseUrl}/search?q=${searchTerm}&sortDesc=true`)
+    .then((res) => res.json())
+}
+
+//https://localhost:5001/api/Post/GetWithComments
+export const getAllPostsWithComments = () => {
+    return fetch(`${baseUrl}/GetWithComments`)
+    .then((res) => res.json())
+}

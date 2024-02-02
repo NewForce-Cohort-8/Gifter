@@ -1,15 +1,15 @@
 import React from "react";
 import "./App.css";
-// import PostList from "./components/PostList";
+import PostList from "./components/PostList";
 import { BrowserRouter } from 'react-router-dom'
-// import { PostForm } from "./components/PostForm";
-import { ApplicationViews } from "./components/ApplicationViews";
+import { PostForm } from "./components/PostForm";
 
 function App() {
  return (
 <>
 <BrowserRouter>
-    <ApplicationViews />
+    
+    <PostList />
   </BrowserRouter>
 </>
 )

@@ -15,6 +15,15 @@ export const Post = ({ post }) => {
           </Link>
         </p>
         <p>{post.caption}</p>
+        <p>Comments:</p>
+        <div>
+            {post.comments?.map((singleComment) => (
+                <>
+                <p>{singleComment.message}</p>
+                <p>{singleComment?.userProfile?.name}</p>
+                </>
+            ))}
+        </div>
       </CardBody>
     </Card>
   );
