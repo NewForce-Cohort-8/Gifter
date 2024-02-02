@@ -67,16 +67,19 @@ namespace Gifter.Repositories
                 using (var cmd = conn.CreateCommand())
                 {
                     cmd.CommandText = @"
-                SELECT p.Id AS PostId, p.Title, p.Caption, p.DateCreated AS PostDateCreated,
+                   SELECT p.Id AS PostId, p.Title, p.Caption, p.DateCreated AS PostDateCreated,
                        p.ImageUrl AS PostImageUrl, p.UserProfileId AS PostUserProfileId,
 
                        up.Name, up.Bio, up.Email, up.DateCreated AS UserProfileDateCreated,
                        up.ImageUrl AS UserProfileImageUrl,
 
-                       c.Id AS CommentId, c.Message, c.UserProfileId AS CommentUserProfileId
+                       c.Id AS CommentId, c.Message, c.UserProfileId AS CommentUserProfileId,
+
+                       u.[Name] as CommentUserProfileName
                   FROM Post p
                        LEFT JOIN UserProfile up ON p.UserProfileId = up.id
                        LEFT JOIN Comment c on c.PostId = p.id
+                       Left Join UserProfile u on c.UserProfileId = u.id
               ORDER BY p.DateCreated";
 
                     var reader = cmd.ExecuteReader();
@@ -118,7 +121,12 @@ namespace Gifter.Repositories
                                 Id = DbUtils.GetInt(reader, "CommentId"),
                                 Message = DbUtils.GetString(reader, "Message"),
                                 PostId = postId,
-                                UserProfileId = DbUtils.GetInt(reader, "CommentUserProfileId")
+                                UserProfileId = DbUtils.GetInt(reader, "CommentUserProfileId"),
+                                UserProfile = new UserProfile()
+                                {
+                                    Id = DbUtils.GetInt(reader, "CommentUserProfileId"),
+                                    Name = DbUtils.GetString(reader, "CommentUserProfileName")
+                                }
                             });
                         }
                     }
@@ -165,6 +173,85 @@ namespace Gifter.Repositories
                 }
             }
         }
+        public Post GetByIdWithComments(int id)
+        {
+            using (var conn = Connection)
+            {
+                conn.Open();
+                using (var cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"
+                   SELECT p.Id AS PostId, p.Title, p.Caption, p.DateCreated AS PostDateCreated,
+                       p.ImageUrl AS PostImageUrl, p.UserProfileId AS PostUserProfileId,
+
+                       up.Name, up.Bio, up.Email, up.DateCreated AS UserProfileDateCreated,
+                       up.ImageUrl AS UserProfileImageUrl,
+
+                       c.Id AS CommentId, c.Message, c.UserProfileId AS CommentUserProfileId,
+
+                       u.[Name] as CommentUserProfileName
+                  FROM Post p
+                       LEFT JOIN UserProfile up ON p.UserProfileId = up.id
+                       LEFT JOIN Comment c on c.PostId = p.id
+                       Left Join UserProfile u on c.UserProfileId = u.id
+                     WHERE p.Id = @Id";
+
+                    DbUtils.AddParameter(cmd, "@Id", id);
+
+                    var reader = cmd.ExecuteReader();
+
+                    Post post = null;
+                    if (reader.Read())
+                    {
+                        
+                        var postId = DbUtils.GetInt(reader, "PostId");
+
+                        if (post == null)
+                        {
+                            post = new Post()
+                            {
+                                Id = postId,
+                                Title = DbUtils.GetString(reader, "Title"),
+                                Caption = DbUtils.GetString(reader, "Caption"),
+                                DateCreated = DbUtils.GetDateTime(reader, "PostDateCreated"),
+                                ImageUrl = DbUtils.GetString(reader, "PostImageUrl"),
+                                UserProfileId = DbUtils.GetInt(reader, "PostUserProfileId"),
+                                UserProfile = new UserProfile()
+                                {
+                                    Id = DbUtils.GetInt(reader, "PostUserProfileId"),
+                                    Name = DbUtils.GetString(reader, "Name"),
+                                    Email = DbUtils.GetString(reader, "Email"),
+                                    DateCreated = DbUtils.GetDateTime(reader, "UserProfileDateCreated"),
+                                    ImageUrl = DbUtils.GetString(reader, "UserProfileImageUrl"),
+                                },
+                                Comments = new List<Comment>()
+                            };
+
+                        }
+
+                        if (DbUtils.IsNotDbNull(reader, "CommentId"))
+                        {
+                            post.Comments.Add(new Comment()
+                            {
+                                Id = DbUtils.GetInt(reader, "CommentId"),
+                                Message = DbUtils.GetString(reader, "Message"),
+                                PostId = postId,
+                                UserProfileId = DbUtils.GetInt(reader, "CommentUserProfileId"),
+                                UserProfile = new UserProfile()
+                                {
+                                    Id = DbUtils.GetInt(reader, "CommentUserProfileId"),
+                                    Name = DbUtils.GetString(reader, "CommentUserProfileName")
+                                }
+                            });
+                        }
+                    }
+
+                    reader.Close();
+
+                    return post;
+                }
+            }
+        }
         public List<Post> Search(string criterion, bool sortDescending)
         {
             using (var conn = Connection)
@@ -184,11 +271,11 @@ namespace Gifter.Repositories
 
                     if (sortDescending)
                     {
-                        sql += "ORDER BY p.DateCreated DESC";
+                        sql += " ORDER BY p.DateCreated DESC";
                     }
                     else
                     {
-                        sql += "ORDER BY p.DateCreated";
+                        sql += " ORDER BY p.DateCreated";
                     }
 
                     cmd.CommandText = sql;

@@ -8,7 +8,7 @@ namespace Gifter.Repositories
         void Delete(int id);
         List<UserProfile> GetAll();
         UserProfile GetById(int id);
-        List<UserProfile> GetByPostUserProfile(int id);
+        UserProfile GetByPostUserProfile(int id);
         void Update(UserProfile userProfile);
     }
 }

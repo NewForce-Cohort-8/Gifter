@@ -82,7 +82,7 @@ namespace Gifter.Repositories
             }
         }
 
-        public List<UserProfile> GetByPostUserProfile (int id)
+        public UserProfile GetByPostUserProfile (int id)
         {
             using (var conn = Connection)
             {
@@ -103,15 +103,15 @@ namespace Gifter.Repositories
 
                     var reader = cmd.ExecuteReader();
 
-                    var userProfiles = new List<UserProfile>();
+                    UserProfile userProfile = null;
                     while (reader.Read())
                     {
                         var userProfileId = DbUtils.GetInt(reader, "PostUserProfileId");
 
-                        var existingPost = userProfiles.FirstOrDefault(p => p.Id == userProfileId);
-                        if (existingPost == null)
+                     
+                        if (userProfile == null)
                         {
-                            existingPost = new UserProfile()
+                            userProfile = new UserProfile()
                             {
                                 Id = userProfileId,
                                 Name = DbUtils.GetString(reader, "Name"),
@@ -121,11 +121,10 @@ namespace Gifter.Repositories
                                 Posts = new List<Post>()
                             };
 
-                            userProfiles.Add(existingPost);
                         }
                             if (DbUtils.IsNotDbNull(reader, "PostId"))
                             {
-                            existingPost.Posts.Add(new Post()
+                            userProfile.Posts.Add(new Post()
                             {
                                 Id = DbUtils.GetInt(reader, "PostId"),
 
@@ -143,7 +142,7 @@ namespace Gifter.Repositories
 
                     reader.Close();
 
-                    return userProfiles;
+                    return userProfile;
                 }
             }
         }
