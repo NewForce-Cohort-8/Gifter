@@ -27,3 +27,9 @@ export const getAllPostsWithComments = () => {
     return fetch(`${baseUrl}/GetWithComments`)
     .then((res) => res.json())
 }
+
+//https://localhost:5001/api/Post/1/PostWithComments
+export const getPostByIdWithComments = (id) => {
+    return fetch(`${baseUrl}/${id}/PostWithComments`)
+    .then((res) => res.json())
+}
